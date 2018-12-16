@@ -21,8 +21,11 @@ def get_user(name):
     cursor = mongo.db.tweets.aggregate(pipeline)
     data = cursor.next()
     if data:
+        oldest = data['id']
+        fetch_user_timeline.delay(name, oldest)
         return jsonify({'status': 200, 'data': data}), 200
     else:
+        fetch_user_timeline.delay(name, -1)
         return jsonify({'status': 404, 'message:': 'User not found'}), 404
 
 
@@ -40,12 +43,12 @@ def get_user_timeline(name):
     if limit:
         pipeline.append({'$limit': limit})
     cursor = mongo.db.tweets.aggregate(pipeline)
-    data = list(cursor)
-    total = len(data)
+    data_list = list(cursor)
+    total = len(data_list)
     if total > 0:
-        oldest = data[0]['id']
+        oldest = data_list[0]['id']
         fetch_user_timeline.delay(name, oldest)
-        return jsonify({'status': 200, 'total': total, 'data': data}), 200
+        return jsonify({'status': 200, 'total': total, 'data': data_list}), 200
     else:
         fetch_user_timeline.delay(name, -1)
         return jsonify({'status': 404, 'message:': 'User not found'}), 404
