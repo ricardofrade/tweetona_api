@@ -1,7 +1,7 @@
 from birdy.twitter import TwitterRateLimitError
 
 from app import celery, twitter, app
-from modules.mongo import build_request, make_mongo
+from .modules.mongo import build_request, make_mongo
 
 
 @celery.task(bind=True)

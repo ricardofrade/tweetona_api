@@ -19,8 +19,9 @@ def get_user(name):
         {'$replaceRoot': {'newRoot': '$user'}}
     ]
     cursor = mongo.db.tweets.aggregate(pipeline)
-    data = cursor.next()
-    if data:
+    data_list = list(cursor)
+    if len(data_list) > 0:
+        data = data_list[0]
         oldest = data['id']
         fetch_user_timeline.delay(name, oldest)
         return jsonify({'status': 200, 'data': data}), 200
@@ -47,7 +48,7 @@ def get_user_timeline(name):
     total = len(data_list)
     if total > 0:
         oldest = data_list[0]['id']
-        fetch_user_timeline.delay(name, oldest)
+        r = fetch_user_timeline.delay(name, oldest)
         return jsonify({'status': 200, 'total': total, 'data': data_list}), 200
     else:
         fetch_user_timeline.delay(name, -1)
